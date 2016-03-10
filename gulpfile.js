@@ -24,9 +24,33 @@ var lib = require('bower-files')({
   }
 });
 
+// sass stuff
+var sass = require('gulp-sass');
+var sourcemaps = require('gulp-sourcemaps');
+
 
 // read --production environment variable if any
 var buildProduction = utilities.env.production;
+
+
+
+// --------------------------------- main build tasks ------------------------------
+
+gulp.task("build", ['clean'], function(){
+  if (buildProduction) {
+    gulp.start('minifyScripts');
+  } else {
+    gulp.start('jsBrowserify');
+  }
+  gulp.start('bower');
+  gulp.start('cssBuild');
+});
+
+gulp.task("clean", function(){
+  return del(['build', 'tmp']);
+});
+
+
 
 
 // --------------------------------- misc tasks -----------------------------------
@@ -68,25 +92,8 @@ gulp.task("minifyScripts", ["jsBrowserify"], function(){
 });
 
 
-// -------------------------------------- build tasks ----------------------------------------
 
-gulp.task("build", ['clean'], function(){
-  if (buildProduction) {
-    gulp.start('minifyScripts');
-  } else {
-    gulp.start('jsBrowserify');
-  }
-  gulp.start('bower');
-  // gulp.start('cssBuild');
-});
-
-gulp.task("clean", function(){
-  return del(['build', 'tmp']);
-});
-
-
-
-// -------------------------------------- bower tasks ----------------------------------------
+// ----------------------------- build vendor js & css (bower tasks) ----------------------------
 
 // shortcut to run bowerJS & bowerCSS (will be run by gulp build)
 gulp.task('bower', ['bowerJS', 'bowerCSS']);
@@ -106,3 +113,15 @@ gulp.task('bowerCSS', function () {
     .pipe(gulp.dest('./build/css'));
 });
 
+
+
+// -------------------------------------- cssBuild (scss conversion) ----------------------------
+
+// convert *.scss -> build/css/____.css
+gulp.task('cssBuild', function() {
+  return gulp.src('scss/*.scss')
+    .pipe(sourcemaps.init()) 
+    .pipe(sass())
+    .pipe(sourcemaps.write())
+    .pipe(gulp.dest('./build/css'));
+});
