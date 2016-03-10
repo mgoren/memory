@@ -28,6 +28,10 @@ var lib = require('bower-files')({
 var sass = require('gulp-sass');
 var sourcemaps = require('gulp-sourcemaps');
 
+// development server stuff (for live reload)
+var browserSync = require('browser-sync').create();
+
+
 
 // read --production environment variable if any
 var buildProduction = utilities.env.production;
@@ -43,13 +47,45 @@ gulp.task("build", ['clean'], function(){
     gulp.start('jsBrowserify');
   }
   gulp.start('bower');
-  gulp.start('cssBuild');
+  gulp.start('scssConvert');
+  gulp.start('jshint');
 });
 
 gulp.task("clean", function(){
   return del(['build', 'tmp']);
 });
 
+
+// --------------------------------- development server tasks ------------------------------
+
+gulp.task('serve', function() {
+  browserSync.init({
+    server: {
+      baseDir: "./",
+      index: "index.html"
+    }
+  });
+  gulp.watch(['*.html'], ['htmlBuild']);
+  gulp.watch(['bower.json'], ['bowerBuild']);
+  gulp.watch(['js/*.js'], ['jsBuild']);
+  gulp.watch("scss/*.scss", ['cssBuild']);
+});
+
+gulp.task('htmlBuild', function(){
+  browserSync.reload();
+});
+
+gulp.task('bowerBuild', ['bower'], function(){
+  browserSync.reload();
+});
+
+gulp.task('jsBuild', ['jsBrowserify', 'jshint'], function(){
+  browserSync.reload();
+});
+
+gulp.task('cssBuild', ['scssConvert'], function(){
+  browserSync.reload();
+});
 
 
 
@@ -115,10 +151,10 @@ gulp.task('bowerCSS', function () {
 
 
 
-// -------------------------------------- cssBuild (scss conversion) ----------------------------
+// -------------------------------------- scss conversion ----------------------------
 
 // convert *.scss -> build/css/____.css
-gulp.task('cssBuild', function() {
+gulp.task('scssConvert', function() {
   return gulp.src('scss/*.scss')
     .pipe(sourcemaps.init()) 
     .pipe(sass())
