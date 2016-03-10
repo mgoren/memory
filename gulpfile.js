@@ -11,13 +11,25 @@ var uglify = require('gulp-uglify'); // for optional minification
 var utilities = require('gulp-util'); // for environment variables (--production)
 var del = require('del'); // for cleaning up build folders
 
+// bower stuff
+var lib = require('bower-files')({
+  "overrides":{
+    "bootstrap" : {
+      "main": [
+        "less/bootstrap.less",
+        "dist/css/bootstrap.css",
+        "dist/js/bootstrap.js"
+      ]
+    }
+  }
+});
+
 
 // read --production environment variable if any
 var buildProduction = utilities.env.production;
 
 
-
-// --------------------------------- misc -----------------------------------
+// --------------------------------- misc tasks -----------------------------------
 
 // jshint task
 gulp.task('jshint', function(){
@@ -28,7 +40,7 @@ gulp.task('jshint', function(){
 
 
 
-// ----------------- concatenate and browserify js files -----------------------
+// ----------------- concatenate and browserify js files tasks -----------------------
 
 // concatenate js/*-interface.js together into tmp/allConcat.js (which will then be browserified)
 gulp.task('concatInterface', function() {
@@ -56,7 +68,7 @@ gulp.task("minifyScripts", ["jsBrowserify"], function(){
 });
 
 
-// -------------------------------------- build ----------------------------------------
+// -------------------------------------- build tasks ----------------------------------------
 
 gulp.task("build", ['clean'], function(){
   if (buildProduction) {
@@ -64,10 +76,33 @@ gulp.task("build", ['clean'], function(){
   } else {
     gulp.start('jsBrowserify');
   }
-  // gulp.start('bower');
+  gulp.start('bower');
   // gulp.start('cssBuild');
 });
 
 gulp.task("clean", function(){
   return del(['build', 'tmp']);
 });
+
+
+
+// -------------------------------------- bower tasks ----------------------------------------
+
+// shortcut to run bowerJS & bowerCSS (will be run by gulp build)
+gulp.task('bower', ['bowerJS', 'bowerCSS']);
+
+// concatenate & minify all bower js (e.g. jquery, bootstrapJS) -> build/js/vendor.min.js
+gulp.task('bowerJS', function () {
+  return gulp.src(lib.ext('js').files)
+    .pipe(concat('vendor.min.js'))
+    .pipe(uglify())
+    .pipe(gulp.dest('./build/js'));
+});
+
+// concatenate all bower css (e.g. bootstrap) -> build/css/vendor.css
+gulp.task('bowerCSS', function () {
+  return gulp.src(lib.ext('css').files)
+    .pipe(concat('vendor.css'))
+    .pipe(gulp.dest('./build/css'));
+});
+
