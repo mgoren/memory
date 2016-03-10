@@ -1,15 +1,22 @@
 var gulp = require('gulp');
-var jshint = require('gulp-jshint');
-
-// js workflow stuff
-var concat = require('gulp-concat'); // concat before browersify
-var browserify = require('browserify'); // browserify concatenated -interface.js files
-var source = require('vinyl-source-stream'); // dependency of browserify
-var uglify = require('gulp-uglify'); // for optional minification
 
 // build stuff
 var utilities = require('gulp-util'); // for environment variables (--production)
 var del = require('del'); // for cleaning up build folders
+
+// development server stuff (for live reload)
+var browserSync = require('browser-sync').create(); // development server (for live reload)
+
+// js workflow stuff
+var concat = require('gulp-concat'); // concat before browersify
+var browserify = require('browserify'); // browserify concatenated -interface.js files
+var source = require('vinyl-source-stream'); // required for browserify
+var uglify = require('gulp-uglify'); // for optional minification
+var jshint = require('gulp-jshint'); // jshint
+
+// sass stuff
+var sass = require('gulp-sass'); // sass
+var sourcemaps = require('gulp-sourcemaps'); // required for sass
 
 // bower stuff
 var lib = require('bower-files')({
@@ -24,21 +31,10 @@ var lib = require('bower-files')({
   }
 });
 
-// sass stuff
-var sass = require('gulp-sass');
-var sourcemaps = require('gulp-sourcemaps');
 
-// development server stuff (for live reload)
-var browserSync = require('browser-sync').create();
+// ------------------------------------ main build tasks ----------------------------------
 
-
-
-// read --production environment variable if any
-var buildProduction = utilities.env.production;
-
-
-
-// --------------------------------- main build tasks ------------------------------
+var buildProduction = utilities.env.production; // check if production environment variable exists
 
 gulp.task("build", ['clean'], function(){
   if (buildProduction) {
@@ -66,16 +62,12 @@ gulp.task('serve', function() {
     }
   });
   gulp.watch(['*.html'], ['htmlBuild']);
-  gulp.watch(['bower.json'], ['bowerBuild']);
   gulp.watch(['js/*.js'], ['jsBuild']);
+  gulp.watch(['bower.json'], ['bowerBuild']);
   gulp.watch("scss/*.scss", ['cssBuild']);
 });
 
 gulp.task('htmlBuild', function(){
-  browserSync.reload();
-});
-
-gulp.task('bowerBuild', ['bower'], function(){
   browserSync.reload();
 });
 
@@ -87,17 +79,9 @@ gulp.task('cssBuild', ['scssConvert'], function(){
   browserSync.reload();
 });
 
-
-
-// --------------------------------- misc tasks -----------------------------------
-
-// jshint task
-gulp.task('jshint', function(){
-  return gulp.src(['js/*.js'])
-    .pipe(jshint())
-    .pipe(jshint.reporter('default'));
+gulp.task('bowerBuild', ['bower'], function(){
+  browserSync.reload();
 });
-
 
 
 // ----------------- concatenate and browserify js files tasks -----------------------
@@ -127,11 +111,29 @@ gulp.task("minifyScripts", ["jsBrowserify"], function(){
     .pipe(gulp.dest("./build/js"));
 });
 
+// run JSHint on all js files
+gulp.task('jshint', function(){
+  return gulp.src(['js/*.js'])
+    .pipe(jshint())
+    .pipe(jshint.reporter('default'));
+});
+
+
+// -------------------------------------- scss conversion ----------------------------
+
+// convert *.scss -> build/css/____.css (will be run by gulp build & by server watcher)
+gulp.task('scssConvert', function() {
+  return gulp.src('scss/*.scss')
+    .pipe(sourcemaps.init()) 
+    .pipe(sass())
+    .pipe(sourcemaps.write())
+    .pipe(gulp.dest('./build/css'));
+});
 
 
 // ----------------------------- build vendor js & css (bower tasks) ----------------------------
 
-// shortcut to run bowerJS & bowerCSS (will be run by gulp build)
+// shortcut to run bowerJS & bowerCSS (will be run by gulp build & by server watcher)
 gulp.task('bower', ['bowerJS', 'bowerCSS']);
 
 // concatenate & minify all bower js (e.g. jquery, bootstrapJS) -> build/js/vendor.min.js
@@ -151,13 +153,3 @@ gulp.task('bowerCSS', function () {
 
 
 
-// -------------------------------------- scss conversion ----------------------------
-
-// convert *.scss -> build/css/____.css
-gulp.task('scssConvert', function() {
-  return gulp.src('scss/*.scss')
-    .pipe(sourcemaps.init()) 
-    .pipe(sass())
-    .pipe(sourcemaps.write())
-    .pipe(gulp.dest('./build/css'));
-});
