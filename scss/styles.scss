@@ -1,5 +1,41 @@
-$blue : #1E90FF;
+$lightpurple : #8B7AAE;
+$lightyellow: #DEF2A2;
 
 body {
-  background-color: $blue;
+  background-color: $lightyellow;
+}
+
+.container {
+  width: 50%;
+
+}
+
+.title {
+  text-align: center;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.game-board {
+  
+  margin: 20px;
+}
+
+.card img {
+  width: 100px;
+  height: 145px;
+  margin: 5px;
+}
+
+#turn-display {
+  display: none;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.hideme {
+  visibility: hidden;
+  //background-color: green;
 }

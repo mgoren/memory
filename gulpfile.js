@@ -32,6 +32,12 @@ var lib = require('bower-files')({
 });
 
 
+// shortcut to run build & serve
+gulp.task('go', ['build'], function() {
+  gulp.start('serve');
+});
+
+
 // ------------------------------------ main build tasks ----------------------------------
 
 var buildProduction = utilities.env.production; // check if production environment variable exists
