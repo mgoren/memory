@@ -1,8 +1,7 @@
 var Memory = function(numCards) {
-  this.previousId = undefined;
-  this.numFlipped = 0;
+  this.numCards = numCards;
   this.buildDeck();
-  this.assignCards(numCards);
+  this.beginGame();
 };
 
 Memory.prototype.buildDeck = function() {
@@ -15,6 +14,15 @@ Memory.prototype.buildDeck = function() {
     });
   });
   this.deck = deck;
+};
+
+Memory.prototype.beginGame = function() {
+  this.cardsRemaining = this.numCards;
+  this.turn = 0;
+  this.assignCards(this.numCards);
+  this.previousId = undefined;
+  this.numFlipped = 0;
+  this.setupBoard(this.numCards);
 };
 
 Memory.prototype.assignCards = function(numCards) {
@@ -45,6 +53,34 @@ Memory.prototype.assignCards = function(numCards) {
   this.cards = cards;
 };
 
+Memory.prototype.setupBoard = function(numCards) {
+  $(".game-board").empty();
+  var numCols = Math.ceil(Math.sqrt(numCards));
+  var numRows = Math.ceil(numCards / numCols);
+  var cardNum = 0;
+  for (var row=0; row < numRows; row++) {
+    $(".game-board").append('<div class="row">');
+    for (var col=0; col < numCols && cardNum < numCards; col++) {
+      $(".game-board").append('<span class="card" id="' + cardNum + '"><img src="img/cards/back.png"></span>');
+      cardNum++;
+    }
+    $(".game-board").append("</div>");
+  }
+  this.makeBoardClickable();
+};
+
+Memory.prototype.makeBoardClickable = function() {
+  this.turn++;
+  $("#turn").text(this.turn); 
+  var game = this;
+  $(".card").off();
+  $(".card").addClass("clickable");
+  $(".card").click(function() {
+    var clicked = parseInt($(this).attr('id'));
+    game.flip(clicked);
+  });
+};
+
 Memory.prototype.flip = function(id) {
   var game = this;
   var card = this.cards[id];
@@ -58,50 +94,51 @@ Memory.prototype.flip = function(id) {
     $("#" + id).removeClass("clickable");
     // console.log("this is the first card");
   } else { // this is the second flipped of two
-      var previousId = this.previousId;
-      var previousCard = this.cards[previousId];
-      $(".card").off();
-      $(".card").removeClass("clickable");
+    var previousId = this.previousId;
+    var previousCard = this.cards[previousId];
+    $(".card").off();
+    $(".card").removeClass("clickable");
 
-      if(card === previousCard) {
-        $("#" + id).addClass("hideme");
-        $("#" + previousId).addClass("hideme");
-        game.numFlipped = 0;
-        game.makeBoardClickable();
+    if(card === previousCard) {
+      $("#" + id).addClass("hideme");
+      $("#" + previousId).addClass("hideme");
+      game.numFlipped = 0;
+      game.cardsRemaining -= 2;
+      if(game.cardsRemaining === 0) {
+        alert("You won in " + this.turn + " turns!");
+        this.beginGame();
       } else {
-        console.log("no match");
-        $("#" + previousId).addClass("clickable");
-        $("#" + id).addClass("clickable");
-        $("#" + id).click(function() {
-          $("#" + id).html('<img src="img/cards/back.png">');
-          game.numFlipped--;
-          if(game.numFlipped === 0) {
-            // console.log("back to normal");
-            game.makeBoardClickable();
-          } else {
-            $("#" + id).removeClass("clickable");
-            $("#" + id).off();
-            // console.log("one more to flip back");
-          }
-        })
-        $("#" + previousId).click(function() {
-          $("#" + previousId).html('<img src="img/cards/back.png">');
-          game.numFlipped--;
-          if(game.numFlipped === 0) {
-            // console.log("back to normal");
-            game.makeBoardClickable();
-          } else {
-            $("#" + previousId).removeClass("clickable");
-            $("#" + previousId).off();
-            // console.log("one more to flip back");
-          }
-        })
+        game.makeBoardClickable();
       }
-
-
-
-
-      // console.log("this is the second card");
+    } else {
+      console.log("no match");
+      $("#" + previousId).addClass("clickable");
+      $("#" + id).addClass("clickable");
+      $("#" + id).click(function() {
+        $("#" + id).html('<img src="img/cards/back.png">');
+        game.numFlipped--;
+        if(game.numFlipped === 0) {
+          // console.log("back to normal");
+          game.makeBoardClickable();
+        } else {
+          $("#" + id).removeClass("clickable");
+          $("#" + id).off();
+          // console.log("one more to flip back");
+        }
+      });
+      $("#" + previousId).click(function() {
+        $("#" + previousId).html('<img src="img/cards/back.png">');
+        game.numFlipped--;
+        if(game.numFlipped === 0) {
+          // console.log("back to normal");
+          game.makeBoardClickable();
+        } else {
+          $("#" + previousId).removeClass("clickable");
+          $("#" + previousId).off();
+          // console.log("one more to flip back");
+        }
+      });
+    }
   }
 
   // $("#" + id).addClass("clickable");
@@ -109,16 +146,6 @@ Memory.prototype.flip = function(id) {
   //   $("#" + id).html('<img src="img/cards/back.png">');
   //   game.makeBoardClickable();
   // });
-};
-
-Memory.prototype.makeBoardClickable = function() {
-  var game = this;
-  $(".card").off();
-  $(".card").addClass("clickable");
-  $(".card").click(function() {
-    var clicked = parseInt($(this).attr('id'));
-    game.flip(clicked);
-  });
 };
 
 exports.Memory = Memory;

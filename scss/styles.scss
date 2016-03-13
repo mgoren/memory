@@ -1,19 +1,21 @@
 $lightpurple : #8B7AAE;
-$lightyellow: #DEF2A2;
+$tan: #FFF0AA;
 
 body {
-  background-color: $lightyellow;
+  background-color: $lightpurple;
 }
 
 .container {
-  width: 50%;
-
+  background: $tan;
+  width: 60%;
+  margin-top: 3em;
+  text-align: center;
 }
 
 .title {
   text-align: center;
   font-size: 22px;
-  font-weight: bold;
+  font-style: italic;
 }
 
 .game-board {
@@ -28,7 +30,7 @@ body {
 }
 
 #turn-display {
-  display: none;
+//  display: none;
 }
 
 .clickable {
