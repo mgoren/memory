@@ -1,3 +1,5 @@
+// ------------------------------------ requires ----------------------------------
+
 var gulp = require('gulp');
 
 // build stuff
@@ -31,13 +33,6 @@ var lib = require('bower-files')({
   }
 });
 
-
-// shortcut to run build & serve
-gulp.task('go', ['build'], function() {
-  gulp.start('serve');
-});
-
-
 // ------------------------------------ main build tasks ----------------------------------
 
 var buildProduction = utilities.env.production; // check if production environment variable exists
@@ -60,7 +55,7 @@ gulp.task("clean", function(){
 
 // --------------------------------- development server tasks ------------------------------
 
-gulp.task('serve', function() {
+gulp.task('serve', ['build'], function() {
   browserSync.init({
     server: {
       baseDir: "./",
