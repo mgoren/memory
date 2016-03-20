@@ -1,12 +1,9 @@
-$lightpurple : #8B7AAE;
-$tan: #FFF0AA;
-
 body {
-  background-color: $lightpurple;
+  background-color: #8B7AAE;
 }
 
 .container {
-  background: $tan;
+  background: #FFF0AA;
   width: 60%;
   margin-top: 3em;
   text-align: center;
@@ -19,7 +16,6 @@ body {
 }
 
 .game-board {
-  
   margin: 20px;
 }
 
